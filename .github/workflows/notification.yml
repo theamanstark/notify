@@ -1,0 +1,20 @@
+name: Send Notification
+
+on:
+  repository_dispatch:
+    types: [notify]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Send Telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: ${{ github.event.client_payload.message }}
+          document: ${{ github.event.client_payload.file }}
