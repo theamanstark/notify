@@ -1,2 +1,2 @@
 # notify
-Github repo to leverage Github actions to send notifications to messaging apps like Telegram and so on.
+Github repo to leverage Github actions to send notifications to messaging apps like Telegram and so on, using the Github REST API.
