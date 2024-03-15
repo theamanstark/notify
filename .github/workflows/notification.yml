@@ -14,7 +14,31 @@ jobs:
       - name: Send Telegram message
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_TO }}
+          to: ${{ github.event.client_payload.chat_id }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: ${{ github.event.client_payload.message }}
           document: ${{ github.event.client_payload.file }}
+
+      - name: Delete file after sending
+        if: github.event.client_payload.file != ''
+        env:
+          GITHUB_USERNAME: "theplayernumber1"
+          GITHUB_REPO: "notify"
+          EMAIL: ${{ secrets.EMAIL }}
+        run: |
+          ENDPOINT="https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${{ github.event.client_payload.file }}"
+          SHA=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" -H "User-Agent: Notify Workflow" $ENDPOINT | jq -r '.sha')
+          curl -L \
+          -X DELETE \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          $ENDPOINT \
+          -d '{
+            "message": "Deleted sent file",
+            "committer": {
+              "name": "'"$GITHUB_USERNAME"'",
+              "email": "'"$EMAIL"'"
+            },
+            "sha": "'"$SHA"'"
+          }'
